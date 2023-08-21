@@ -1,18 +1,19 @@
-const URI = "http://localhost:27017/user"
-const URI_ALL = "http://localhost:27017/user/all/get"
+const URI = "http://127.0.0.1:5000/user"
+const URI_AUTHENTICATE = "http://127.0.0.1:5000"
+const URI_ALL = "http://127.0.0.1:5000/user/all/get"
 
 
 const UserAPI = {
     //authenticating the user
-    authenticateUser: (userCredentials) => {
-        fetch(URI + "/login",  {
+    authenticateUser: async (userCredentials) => {
+        await fetch(URI_AUTHENTICATE + "/login",  {
             method: "POST",
             headers: {"Content-Type": "application/json"},
             body: JSON.stringify(userCredentials)
         })
         .then(result => {
             if (!result.ok) {
-                throw new Error('Authentication failed');
+                throw new Error('Login failed, please try again!');
             }
             return result.json();
         })
@@ -20,14 +21,16 @@ const UserAPI = {
             console.log("Authentication successful");
             console.log(data);
 
+            alert(data.message)
             // Store the token in local storage
-            localStorage.setItem('authToken', data.token);
+            localStorage.setItem('authToken', data.access_token);
+            localStorage.setItem('username', data.username);
 
             return data;
         })
         .catch(error => {
-            console.error("Authentication error:", error);
-            throw error;
+            console.error(error.message);
+            throw error.message;
         });
     },
 
@@ -79,8 +82,15 @@ const UserAPI = {
     },
 
     // getting user by id
-    getUserByUsername: (setUserList, username) => {
-        fetch(URI + `/${username}`, {
+    getUserById: (setUserList, id) => {
+        const authToken = localStorage.getItem('authToken');
+
+        if (!authToken) {
+            console.error("Token not available");
+            return;
+        }
+        
+        fetch(URI + `/${id}`, {
             headers: {
                 "Authorization": `Bearer ${authToken}`
             }
@@ -109,21 +119,15 @@ const UserAPI = {
         } )
             .then( result => result.json() )
             .then( data => {
-                console.log("User CREATED")
-                console.log(data)
-
                 // dont wanna show all the information
-                alert("User created!" + 
-                    `\nID: ${data._id}` +
-                    `\nUsername: ${data.username}` +
-                    `\nFirstName: ${data.first_name}` +
-                    `\nLastName: ${data.last_name}` +
-                    `\nEmail: ${data.email}` + 
-                    `\nAddress: ${data.address}`
-                    )
-
+                alert(`${data.message}` + 
+                    `\nId: ${data.inserted_id}`
+                    );
             } )
-            .catch( (error) => { console.log(error) } );
+            .catch( (error) => { 
+                console.error(error.message);
+                throw error.mesage;
+            } );
     }
 }
 

@@ -1,22 +1,23 @@
 import './App.css';
+import { Navbar } from "./components/navbar";
 
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './components/Login';
 import Registration from './components/Registration';
-import React, { useState } from "react";
 
 function App() {
 
-  const [user, setUser] = useState(undefined);
-
   return (
     <div className="App">
-      <BrowserRouter>
+      <Router>
+        <Navbar />
         <Routes>
-          <Route path="/login" element={<Login setUser={setUser}/>}></Route>
-          <Route path="/registration" element={<Registration setUser={setUser}/>}></Route>
+          <Route path="/login" element={<Login />}/>
+          <Route path="/" element={<Navigate to="/login" />} />
+          <Route path="/home"/>
+          <Route path="/registration" element={<Registration />} />
         </Routes>
-      </BrowserRouter>
+      </Router>
     </div>
   );
 }
